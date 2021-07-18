@@ -1,3 +1,3 @@
-from label import*
+from image import*
 
-l = Label('../2713ML0142060011003969C00_DRCX.LBL')
+l = Image('../2713ML0142060011003969C00_DRCX.IMG')

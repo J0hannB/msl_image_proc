@@ -18,10 +18,10 @@ class Label:
 
                 if len(self.peek_line(f)) > 0 and self.peek_line(f).find('/*') < 0:
 
-                    if self.peek_line(f).find("OBJECT") >= 0:
+                    if self.peek_line(f).find("OBJECT") == 0:
 
                         self.parse_obj(f)
-                    elif self.peek_line(f).find("GROUP") >= 0:
+                    elif self.peek_line(f).find("GROUP") == 0:
 
                         self.parse_group(f)
                     else:
@@ -30,8 +30,8 @@ class Label:
                 else:
                     f.readline()
 
-        print('kvs: {}'.format(self.kvTable))
-        print('groups: {}'.format(self.groups))
+        # print('kvs: {}'.format(self.kvTable))
+        # print('groups: {}'.format(self.groups))
         print('objects: {}'.format(self.objects))
 
 
@@ -48,7 +48,7 @@ class Label:
         kv = line.split('=')
 
         if len(kv) != 2:
-            print("invalid kv pair: {}".format(line))
+            # print("invalid kv pair: {}".format(line))
             return None
 
         key = kv[0].strip()
@@ -88,7 +88,7 @@ class Label:
 
         (key, value) = ret
 
-        print('Parsing entry "{} : {}"'.format(key, value))
+        # print('Parsing entry "{} : {}"'.format(key, value))
         self.kvTable[key] = value
 
     def parse_obj(self, f):
@@ -97,17 +97,22 @@ class Label:
         (objKey, objName) = self.split_kv(line)
         value_dict = {}
 
+        print("parsing object: {}".format(objName))
+
         while True:
 
             line = self.peek_line(f)
             if line is None:
+                print("got empty line in object")
                 return
             elif line.find("END_OBJECT") >= 0:
+                print("reached end of object")
                 break
 
             ret = self.parse_kv(f)
 
             if ret is None:
+                print("empty kv pair")
                 break
 
             (k, v) = ret
