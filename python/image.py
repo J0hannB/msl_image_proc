@@ -15,8 +15,8 @@ class Image:
         self.read_image()
 
 
-
-
+    # read the image from the .IMG file based on the format described
+    # in the label file
     def read_image(self):
 
         imgObj = self.label.objects['IMAGE']
@@ -31,16 +31,35 @@ class Image:
 
         print('Reading image of size {}x{}'.format(rows, cols))
 
-        img = np.zeros((rows,cols,3), np.uint8)
 
         with open(self.fName, 'rb') as imgFile:
 
-            for i in range(0, rows):
-                for j in range(0, cols):
+            channelCount = 3
+            channels = []
 
-                    b = imgFile.read(1)
+            for c in range(0, channelCount):
 
-                    img[i][j] = ord(b)
+                channel = np.zeros((rows,cols,1), np.uint8)
 
-        cv.imshow('img', img)
+                for i in range(0, rows):
+                    for j in range(0, cols):
+
+                        b = imgFile.read(1)
+
+                        channel[i][j] = ord(b)
+
+                channels.append(channel)
+
+        print('channels: {}'.format(len(channels)))
+
+        r = channels[0]
+        g = channels[1]
+        b = channels[2]
+
+        self.img = cv.merge((b, g, r))
+
+        cv.imshow('img', self.img)
+        # cv.imshow('r', r)
+        # cv.imshow('g', g)
+        # cv.imshow('b', b)
         cv.waitKey()
