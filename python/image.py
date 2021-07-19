@@ -7,12 +7,16 @@ class Image:
 
     def __init__(self, fName):
 
+        self.rows = 0
+        self.cols = 0
+
         lblName = fName.replace('.IMG', '.LBL')
 
         self.label = Label(lblName)
         self.fName = fName
 
         self.read_image()
+        self.parse_details()
 
 
     # read the image from the .IMG file based on the format described
@@ -22,14 +26,13 @@ class Image:
         imgObj = self.label.objects['IMAGE']
 
         if imgObj is None:
-
             print('Error: No image object found in label!')
             return
 
-        rows = int(imgObj['LINES'])
-        cols = int(imgObj['LINE_SAMPLES'])
+        self.rows = int(imgObj['LINES'])
+        self.cols = int(imgObj['LINE_SAMPLES'])
 
-        print('Reading image of size {}x{}'.format(rows, cols))
+        print('Reading image of size {}x{}'.format(self.rows, self.cols))
 
 
         with open(self.fName, 'rb') as imgFile:
@@ -38,11 +41,10 @@ class Image:
             channels = []
 
             for c in range(0, channelCount):
+                channel = np.zeros((self.rows, self.cols, 1), np.uint8)
 
-                channel = np.zeros((rows,cols,1), np.uint8)
-
-                for i in range(0, rows):
-                    for j in range(0, cols):
+                for i in range(0, self.rows):
+                    for j in range(0, self.cols):
 
                         b = imgFile.read(1)
 
@@ -63,3 +65,34 @@ class Image:
         # cv.imshow('g', g)
         # cv.imshow('b', b)
         cv.waitKey()
+
+
+    def parse_details(self):
+
+        instGroup = self.label.groups['INSTRUMENT_STATE_PARAMS']
+
+        if instGroup is None:
+            print('Error: No instrument group found in label!')
+            return
+
+        self.verticalFov = float(instGroup['VERTICAL_FOV'])
+        self.horizontalFov = float(instGroup['HORIZONTAL_FOV'])
+
+        derivedParamsGroup = self.label.groups['DERIVED_IMAGE_PARAMS']
+
+        if derivedParamsGroup is None:
+            print('Error: No derived image params group found in label!')
+            return
+
+        self.fixedInstAz = float(derivedParamsGroup['FIXED_INSTRUMENT_AZIMUTH'])
+        self.fixedInstEl = float(derivedParamsGroup['FIXED_INSTRUMENT_ELEVATION'])
+
+        # calculated params
+
+        # units: degrees from horizontal plane [-90, 90]
+        self.upperLimVert = self.fixedInstEl + self.verticalFov/2.0
+        self.lowerLimVert = self.fixedInstEl - self.verticalFov/2.0
+
+        # units: degrees from North [0, 360]
+        self.rightLimHor = self.fixedInstEl + self.horizontalFov/2.0
+        self.leftLimHor = self.fixedInstEl - self.horizontalFov/2.0
