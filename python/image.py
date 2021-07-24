@@ -3,6 +3,7 @@ import numpy as np
 
 from label import*
 
+
 class Image:
 
     def __init__(self, fName):
@@ -18,9 +19,9 @@ class Image:
         self.read_image()
         self.parse_details()
 
-
     # read the image from the .IMG file based on the format described
     # in the label file
+
     def read_image(self):
 
         imgObj = self.label.objects['IMAGE']
@@ -33,7 +34,6 @@ class Image:
         self.cols = int(imgObj['LINE_SAMPLES'])
 
         print('Reading image of size {}x{}'.format(self.rows, self.cols))
-
 
         with open(self.fName, 'rb') as imgFile:
 
@@ -60,16 +60,15 @@ class Image:
 
         self.img = cv.merge((b, g, r))
 
-        cv.imshow('img', self.img)
+        # cv.imshow('img', self.img)
         # cv.imshow('r', r)
         # cv.imshow('g', g)
         # cv.imshow('b', b)
-        cv.waitKey()
-
+        # cv.waitKey()
 
     def parse_details(self):
 
-        instGroup = self.label.groups['INSTRUMENT_STATE_PARAMS']
+        instGroup = self.label.groups['INSTRUMENT_STATE_PARMS']
 
         if instGroup is None:
             print('Error: No instrument group found in label!')
@@ -78,14 +77,16 @@ class Image:
         self.verticalFov = float(instGroup['VERTICAL_FOV'])
         self.horizontalFov = float(instGroup['HORIZONTAL_FOV'])
 
-        derivedParamsGroup = self.label.groups['DERIVED_IMAGE_PARAMS']
+        derivedParamsGroup = self.label.groups['DERIVED_IMAGE_PARMS']
 
         if derivedParamsGroup is None:
             print('Error: No derived image params group found in label!')
             return
 
-        self.fixedInstAz = float(derivedParamsGroup['FIXED_INSTRUMENT_AZIMUTH'])
-        self.fixedInstEl = float(derivedParamsGroup['FIXED_INSTRUMENT_ELEVATION'])
+        self.fixedInstAz = float(
+            derivedParamsGroup['FIXED_INSTRUMENT_AZIMUTH'])
+        self.fixedInstEl = float(
+            derivedParamsGroup['FIXED_INSTRUMENT_ELEVATION'])
 
         # calculated params
 
@@ -94,5 +95,10 @@ class Image:
         self.lowerLimVert = self.fixedInstEl - self.verticalFov/2.0
 
         # units: degrees from North [0, 360]
-        self.rightLimHor = self.fixedInstEl + self.horizontalFov/2.0
-        self.leftLimHor = self.fixedInstEl - self.horizontalFov/2.0
+        self.rightLimHor = self.fixedInstAz + self.horizontalFov/2.0
+        self.leftLimHor = self.fixedInstAz - self.horizontalFov/2.0
+
+        print("Vertical limits [{},{}] deg".format(
+            self.lowerLimVert, self.upperLimVert))
+        print("Horizontal limits [{},{}] deg".format(
+            self.leftLimHor, self.rightLimHor))

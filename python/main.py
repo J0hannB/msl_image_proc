@@ -1,3 +1,4 @@
+from io import UnsupportedOperation
 import cv2 as cv
 
 from image import*
@@ -8,9 +9,20 @@ import os
 
 dataPath = '../data/'
 
+fovHor = 35  # degrees
+fovVer = 6  # degrees
+pxPerDeg = 100
+canvasVerCenterDeg = -16
+canvasHorCenterDeg = 233
+
+# ignoreFiles = ['_DRLX', '_DRXX', '_DRCL']
+
+canvas = np.zeros((fovVer*pxPerDeg, fovHor*pxPerDeg, 3), np.uint8)
+
 for file in os.listdir(dataPath):
 
     # ignore these file types until I figure out how to process them
+    # or file.find('_DRCX') >= 0:
     if file.find('_DRLX') >= 0 or file.find('_DRXX') >= 0:
         continue
 
@@ -24,7 +36,34 @@ for file in os.listdir(dataPath):
             print('Unable to find label for image! Skipping')
             continue
 
+        imgObj = Image(imgPath)
 
-        i = Image(imgPath)
+        sizeVerPx = int(imgObj.upperLimVert*pxPerDeg -
+                        imgObj.lowerLimVert*pxPerDeg)
+        sizeHorPx = int(imgObj.rightLimHor*pxPerDeg -
+                        imgObj.leftLimHor*pxPerDeg)
+        # sizeVerPx = int(pxPerDeg*sizeVerDeg)
+        # sizeHorPx = int(pxPerDeg*sizeHorDeg)
+
+        print('Scaling to {}x{}'.format(sizeHorPx, sizeVerPx))
+
+        scaledImg = cv.resize(
+            imgObj.img, (sizeHorPx, sizeVerPx))
+
+        lowerLimVerPx = int(
+            (imgObj.lowerLimVert - canvasVerCenterDeg)*pxPerDeg)
+        upperLimVerPx = lowerLimVerPx + sizeVerPx
+        leftLimHorPx = int(
+            (imgObj.leftLimHor - canvasHorCenterDeg)*pxPerDeg)
+        rightimHorPx = leftLimHorPx + sizeHorPx
+
+        print('Placing image at [{}:{}][{}:{}]'.format(
+            lowerLimVerPx, upperLimVerPx, leftLimHorPx, rightimHorPx))
+
+        canvas[lowerLimVerPx:upperLimVerPx,
+               leftLimHorPx:rightimHorPx] = scaledImg
+
+        cv.imshow('canvas', canvas)
+        cv.waitKey()
 
         # TODO: use the angles parsed in `i` to place this image in a large cv mat

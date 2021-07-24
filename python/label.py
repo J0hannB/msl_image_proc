@@ -8,9 +8,7 @@ class Label:
 
         with open(fName, 'r') as f:
 
-
             while True:
-
 
                 if self.peek_line(f) is None or \
                         self.peek_line(f).strip() == 'END':
@@ -32,8 +30,7 @@ class Label:
 
         # print('kvs: {}'.format(self.kvTable))
         # print('groups: {}'.format(self.groups))
-        print('objects: {}'.format(self.objects))
-
+        # print('objects: {}'.format(self.objects))
 
     # parse helper functions
 
