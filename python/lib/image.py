@@ -8,11 +8,11 @@ class Image:
 
     def __init__(self, fName):
 
-        self.rows = 0
-        self.cols = 0
-
         lblName = fName.replace('.IMG', '.LBL')
 
+        self.img = None
+        self.rows = 0
+        self.cols = 0
         self.label = Label(lblName)
         self.fName = fName
 
@@ -60,11 +60,11 @@ class Image:
 
         self.img = cv.merge((b, g, r))
 
-        # cv.imshow('img', self.img)
+        cv.imshow('img', self.img)
         # cv.imshow('r', r)
         # cv.imshow('g', g)
         # cv.imshow('b', b)
-        # cv.waitKey()
+        cv.waitKey()
 
     def parse_details(self):
 
