@@ -7,7 +7,8 @@ import os
 # l = Image('../2713ML0142060011003969C00_DRCX.IMG')
 # l = Image('../data/0126MR0007820040200791C00_DRCL.IMG')
 
-dataPath = '../data/'
+dataPath = '../../data/'
+outPath = '../../output/'
 
 fovHor = 35  # degrees
 fovVer = 6  # degrees
@@ -16,6 +17,56 @@ canvasVerCenterDeg = -16
 canvasHorCenterDeg = 233
 
 # ignoreFiles = ['_DRLX', '_DRXX', '_DRCL']
+
+
+def show_image(img, canvas):
+
+        sizeVerPx = int(img.upperLimVert*pxPerDeg -
+                        img.lowerLimVert*pxPerDeg)
+        sizeHorPx = int(img.rightLimHor*pxPerDeg -
+                        img.leftLimHor*pxPerDeg)
+        # sizeVerPx = int(pxPerDeg*sizeVerDeg)
+        # sizeHorPx = int(pxPerDeg*sizeHorDeg)
+
+        print('Scaling to {}x{}'.format(sizeHorPx, sizeVerPx))
+
+        scaledImg = cv.resize(
+            img.img, (sizeHorPx, sizeVerPx))
+
+        lowerLimVerPx = int(
+            (img.lowerLimVert - canvasVerCenterDeg)*pxPerDeg)
+        upperLimVerPx = lowerLimVerPx + sizeVerPx
+        leftLimHorPx = int(
+            (img.leftLimHor - canvasHorCenterDeg)*pxPerDeg)
+        rightimHorPx = leftLimHorPx + sizeHorPx
+
+        print('Placing image at [{}:{}][{}:{}]'.format(
+            lowerLimVerPx, upperLimVerPx, leftLimHorPx, rightimHorPx))
+
+        canvas[lowerLimVerPx:upperLimVerPx,
+               leftLimHorPx:rightimHorPx] = scaledImg
+
+        cv.imshow('canvas', canvas)
+        cv.waitKey()
+
+def get_out_path_base(img):
+    fName = os.path.split(img.fName)[1]
+    fName = os.path.splitext(fName)[0]
+    outFilePath = os.path.join(outPath, fName)
+
+    return outFilePath
+
+
+def write_out_label(img):
+    outLabelPath = get_out_path_base(img) + '.txt'
+    with open(outLabelPath, 'w') as outLable: 
+        outLable.write('{},{},{},{}'.format(img.rightLimHor, img.upperLimVert, img.leftLimHor, img.lowerLimVert))
+
+
+def write_out_img(img):
+    outImgPath = get_out_path_base(img) + '.bmp'
+    cv.imwrite(outImgPath, img.img)
+
 
 canvas = np.zeros((fovVer*pxPerDeg, fovHor*pxPerDeg, 3), np.uint8)
 
@@ -38,32 +89,10 @@ for file in os.listdir(dataPath):
 
         imgObj = Image(imgPath)
 
-        sizeVerPx = int(imgObj.upperLimVert*pxPerDeg -
-                        imgObj.lowerLimVert*pxPerDeg)
-        sizeHorPx = int(imgObj.rightLimHor*pxPerDeg -
-                        imgObj.leftLimHor*pxPerDeg)
-        # sizeVerPx = int(pxPerDeg*sizeVerDeg)
-        # sizeHorPx = int(pxPerDeg*sizeHorDeg)
+        show_image(imgObj, canvas)
+        write_out_label(imgObj)
+        write_out_img(imgObj)
 
-        print('Scaling to {}x{}'.format(sizeHorPx, sizeVerPx))
 
-        scaledImg = cv.resize(
-            imgObj.img, (sizeHorPx, sizeVerPx))
-
-        lowerLimVerPx = int(
-            (imgObj.lowerLimVert - canvasVerCenterDeg)*pxPerDeg)
-        upperLimVerPx = lowerLimVerPx + sizeVerPx
-        leftLimHorPx = int(
-            (imgObj.leftLimHor - canvasHorCenterDeg)*pxPerDeg)
-        rightimHorPx = leftLimHorPx + sizeHorPx
-
-        print('Placing image at [{}:{}][{}:{}]'.format(
-            lowerLimVerPx, upperLimVerPx, leftLimHorPx, rightimHorPx))
-
-        canvas[lowerLimVerPx:upperLimVerPx,
-               leftLimHorPx:rightimHorPx] = scaledImg
-
-        cv.imshow('canvas', canvas)
-        cv.waitKey()
 
         # TODO: use the angles parsed in `i` to place this image in a large cv mat

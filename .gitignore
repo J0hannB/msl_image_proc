@@ -3,4 +3,5 @@
 *.LBL
 *.lbl
 *.pyc
+output
 data

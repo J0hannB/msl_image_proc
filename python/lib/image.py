@@ -1,5 +1,5 @@
-# import cv2 as cv
-# import numpy as np
+import cv2 as cv
+import numpy as np
 
 from label import*
 
@@ -41,9 +41,9 @@ class Image:
             channels = []
 
             for c in range(0, channelCount):
-                # channel = np.zeros((self.rows, self.cols, 1), np.uint8)
+                channel = np.zeros((self.rows, self.cols, 1), np.uint8)
 
-                channel = list(self.rows(list(self.cols))
+                # channel = list(self.rows(list(self.cols)))  
 
                 for i in range(0, self.rows):
                     for j in range(0, self.cols):
@@ -60,8 +60,8 @@ class Image:
         g = channels[1]
         b = channels[2]
 
-        # self.img = cv.merge((b, g, r))\
-        self.img = channels
+        self.img = cv.merge((b, g, r))
+        # self.img = channels
 
         # cv.imshow('img', self.img)
         # cv.imshow('r', r)
